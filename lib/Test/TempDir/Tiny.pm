@@ -14,11 +14,9 @@ use Carp qw/croak/;
 use Cwd qw/abs_path/;
 use File::Path 2.01 qw/remove_tree/;
 use File::Temp;
-use Test::Builder;
 
-my ( $root_dir, $test_dir );
-
-my %COUNTER;
+my ( $ROOT_DIR, $TEST_DIR, %COUNTER );
+my ( $ORIGINAL_PID, $ORIGINAL_CWD ) = ( $$, abs_path(".") );
 
 =func tempdir
 
@@ -50,53 +48,65 @@ current test file is passing.
 =cut
 
 sub tempdir {
-    my $label = @_ ? shift : 'default';
+    my $label = defined( $_[0] ) ? $_[0] : 'default';
     $label =~ tr{a-zA-Z0-9_-}{_}cs;
 
-    _init() unless $root_dir && $test_dir;
+    _init() unless $ROOT_DIR && $TEST_DIR;
     my $suffix = ++$COUNTER{$label};
-    my $subdir = "$test_dir/${label}_${suffix}";
+    my $subdir = "$TEST_DIR/${label}_${suffix}";
     mkdir $subdir or die $!;
     return $subdir;
 }
 
 sub _init {
-    # root_dir is t/tmp or a File::Temp object
+    # ROOT_DIR is t/tmp or a File::Temp object
     if ( -w 't' ) {
-        $root_dir = abs_path('t/tmp');
-        if ( -e $root_dir ) {
-            croak("$root_dir is not a directory")
-              unless -d $root_dir;
+        $ROOT_DIR = abs_path('t/tmp');
+        if ( -e $ROOT_DIR ) {
+            croak("$ROOT_DIR is not a directory")
+              unless -d $ROOT_DIR;
         }
         else {
-            mkdir $root_dir or die $!;
+            mkdir $ROOT_DIR or die $!;
         }
     }
     else {
-        $root_dir = File::Temp->newdir( TMPDIR => 1 );
+        $ROOT_DIR = File::Temp->newdir( TMPDIR => 1 );
     }
 
-    # test_dir is based on .t path under root_dir
+    # TEST_DIR is based on .t path under ROOT_DIR
     ( my $dirname = $0 ) =~ tr{\\/.}{_};
-    $test_dir = "$root_dir/$dirname";
-    if ( !-d $test_dir ) {
-        mkdir $test_dir or die $!;
+    $TEST_DIR = "$ROOT_DIR/$dirname";
+    if ( !-d $TEST_DIR ) {
+        mkdir $TEST_DIR or die $!;
     }
     else {
-        remove_tree( $test_dir, { safe => 0, keep_root => 1 } );
+        remove_tree( $TEST_DIR, { safe => 0, keep_root => 1 } );
     }
     return;
 }
 
-END {
-    # cleanup logic only if we have a non-File::Temp root
-    if ( $root_dir && !ref $root_dir ) {
-        my $tb = Test::Builder->new;
-        if ( $tb->is_passing ) {
-            remove_tree( $test_dir, { safe => 0 } ) if -d $test_dir;
+sub _cleanup {
+    # A File::Temp::Dir ROOT_DIR always gets to clean itself up
+    if ( $ROOT_DIR && !ref $ROOT_DIR && -d $ROOT_DIR ) {
+        if ( not $? ) {
+            chdir $ORIGINAL_CWD;
+            remove_tree( $TEST_DIR, { safe => 0 } ) if -d $TEST_DIR;
         }
         # will fail if there are any children, but we don't care
-        rmdir $root_dir;
+        rmdir $ROOT_DIR;
+    }
+}
+
+# for testing
+sub _root_dir { return $ROOT_DIR }
+
+END {
+    # only clean up in original process, not children
+    if ( $$ == $ORIGINAL_PID ) {
+        # our clean up must run after Test::More sets $? in its END block
+        require B;
+        push @{ B::end_av()->object_2svref }, \&_cleanup;
     }
 }
 
@@ -132,8 +142,9 @@ a plain C<tempdir()> call winds up as F<t/tmp/t_foo_t/default_1/>.  This makes
 it very easy to find temporary files later.
 
 If the root is F<t/tmp>, then when the test file exits, if all tests passed,
-then the test-file-specific directory is recursively removed.  Otherwise, it
-sticks around for inspection.
+then the process changes to the original working directory and the
+test-file-specific directory is recursively removed.  Otherwise, it sticks
+around for inspection.
 
 If nothing is left in F<t/tmp> (i.e. no other tests failed), then F<t/tmp>
 is cleaned up as well.
