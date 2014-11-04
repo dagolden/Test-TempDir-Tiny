@@ -12,7 +12,10 @@ our @EXPORT = qw/tempdir/;
 
 use Carp qw/croak/;
 use Cwd qw/abs_path/;
-use File::Path 2.01 qw/remove_tree/;
+{
+    no warnings 'numeric'; # loading File::Path has non-numeric warnings on 5.8
+    use File::Path 2.01 qw/remove_tree/;
+}
 use File::Temp;
 
 my ( $ROOT_DIR, $TEST_DIR, %COUNTER );
