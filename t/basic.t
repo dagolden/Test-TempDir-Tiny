@@ -4,7 +4,20 @@ use warnings;
 use Cwd qw/abs_path/;
 use File::Copy qw/copy/;
 use Test::More;
-use Capture::Tiny qw/capture/;
+
+# make Capture::Tiny optional
+BEGIN {
+    my $class = "Capture::Tiny"; # hide from scanners
+    eval "use $class 'capture'"; ## no critic
+    if ($@) {
+        *capture = sub(&) {
+            diag "START SUBTEST OUTPUT";
+            shift->();
+            diag "END SUBTEST OUTPUT";
+            return '(not captured)';
+        };
+    }
+}
 
 # dogfood
 use Test::TempDir::Tiny;
@@ -34,8 +47,9 @@ like( $failing, qr{$root/t_basic_t/failing_1$}, "failing directory created" );
 # passing
 
 chdir $passing;
-my ( $out, $err, $rc ) =
-  capture { system( $perl, qw/-MTest::Harness -e runtests(@ARGV)/, 't/01-pass.t' ) };
+my ( $out, $err, $rc ) = capture {
+    system( $perl, "-I$lib", qw/-MTest::Harness -e runtests(@ARGV)/, 't/01-pass.t' )
+};
 chdir $cwd;
 
 ok( !-d "$passing/tmp/t_01-pass_t", "passing test directory was cleaned up" )
@@ -45,8 +59,9 @@ ok( !-d "$passing/tmp", "passing root directory was cleaned up" );
 # failing
 
 chdir $failing;
-( $out, $err, $rc ) =
-  capture { system( $perl, qw/-MTest::Harness -e runtests(@ARGV)/, 't/01-fail.t' ) };
+( $out, $err, $rc ) = capture {
+    system( $perl, "-I$lib", qw/-MTest::Harness -e runtests(@ARGV)/, 't/01-fail.t' )
+};
 chdir $cwd;
 
 ok( -d "$failing/tmp/t_01-fail_t", "failing test directory was not cleaned up" )

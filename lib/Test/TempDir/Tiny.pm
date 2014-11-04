@@ -133,7 +133,8 @@ This module works with L<Test::More> to create temporary directories that stick
 around if tests fail.
 
 It is loosely based on L<Test::TempDir>, but with less complexity, greater
-portability and zero non-core dependencies.
+portability and zero non-core dependencies.  (L<Capture::Tiny> is recommended
+for testing.)
 
 The L</tempdir> function is exported by default.  When called, it constructs a
 directory tree to hold temporary directories.
