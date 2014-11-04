@@ -29,8 +29,8 @@ Creates a directory underneath a test-file-specific temporary directory and
 returns the absolute path to it.
 
 The function takes a single argument as a label for the directory or defaults
-to "default".  The label will have everything except C<<[a-zA-Z0-9_=]>>
-replaced with '_' and then an incrementing counter value will be appended.
+to "default".  The label will have everything except alphanumerics, underscore
+and dash replaced with underscore and then a counter value will be appended.
 This allows use of a labeled directory in loops:
 
     for ( 1 .. 3 ) {
@@ -42,7 +42,7 @@ This allows use of a labeled directory in loops:
     #   .../in_loop_2
     #   .../in_loop_3
 
-The test-file-specific directory will be cleaned up in and END block if the
+The test-file-specific directory will be cleaned up with an END block if the
 current test file is passing.
 
 =cut
@@ -114,37 +114,41 @@ END {
 
 =head1 SYNOPSIS
 
+    # t/foo.t
+    use Test::More;
     use Test::TempDir::Tiny;
 
-    $dir = tempdir();          # .../default_1/
-    $dir = tempdir("label");   # .../label_1/
-    $dir = tempdir("label");   # .../label_2/
+    $dir = tempdir();          # ./tmp/t_foo_t/default_1/
+    $dir = tempdir("label");   # ./tmp/t_foo_t/label_1/
+    $dir = tempdir("label");   # ./tmp/t_foo_t/label_2/
 
 =head1 DESCRIPTION
 
-This module works with L<Test::More> to create temporary directories for
-testing that stick around if tests fail.  It is loosely based on
-L<Test::TempDir>, but with less complexity and zero non-core dependencies.  For
-example, Test::TempDir::Tiny uses multiple subdirectories to allow parallel
-testing without un-portable locking.
+This module works with L<Test::More> to create temporary directories that stick
+around if tests fail.
+
+It is loosely based on L<Test::TempDir>, but with less complexity, greater
+portability and zero non-core dependencies.
 
 The L</tempdir> function is exported by default.  When called, it constructs a
-directory tree to hold temporary directories.  If the F<t> directory is
-writable, the root for directories will be F<t/tmp>.  Otherwise, a
-L<File::Temp> directory will be created wherever temporary directories are
-stored for your system.
+directory tree to hold temporary directories.
 
-Every F<*.t> file gets its own subdirectory under the root, based on the
+If the F<t> directory is writable, the root for directories will be F<t/tmp>.
+Otherwise, a L<File::Temp> directory will be created wherever temporary
+directories are stored for your system.
+
+Every F<*.t> file gets its own subdirectory under the root based on the test
 filename, but with slashes and periods replaced with underscores.  For example,
-F<t/foo.t> would get a test-file-specfic subdirectory F<t/tmp/t_foo_t/>.  Then
-any directories created by L</tempdir> get put in that directory.  For example,
-a plain C<tempdir()> call winds up as F<t/tmp/t_foo_t/default_1/>.  This makes
-it very easy to find temporary files later.
+F<t/foo.t> would get a test-file-specific subdirectory F<t/tmp/t_foo_t/>.
+Directories created by L</tempdir> get put in that directory.  This makes it
+very easy to find files later if tests fail.
 
-If the root is F<t/tmp>, then when the test file exits, if all tests passed,
-then the process changes to the original working directory and the
-test-file-specific directory is recursively removed.  Otherwise, it sticks
-around for inspection.
+When the test file exits, if all tests passed, then the test-file-specific
+directory is recursively removed.
+
+If test failed and the root directory is F<t/tmp>, the test-file-specific
+directory sticks around for inspection.  (But if the root is a L<File::Temp>
+directory, it is always discarded).
 
 If nothing is left in F<t/tmp> (i.e. no other tests failed), then F<t/tmp>
 is cleaned up as well.
