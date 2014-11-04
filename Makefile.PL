@@ -21,19 +21,21 @@ my %WriteMakefileArgs = (
   "MIN_PERL_VERSION" => "5.008001",
   "NAME" => "Test::TempDir::Tiny",
   "PREREQ_PM" => {
+    "B" => 0,
     "Carp" => 0,
     "Cwd" => 0,
     "Exporter" => "5.57",
     "File::Path" => "2.01",
     "File::Temp" => 0,
-    "Test::Builder" => 0,
     "strict" => 0,
     "warnings" => 0
   },
   "TEST_REQUIRES" => {
+    "Capture::Tiny" => 0,
     "ExtUtils::MakeMaker" => 0,
+    "File::Copy" => 0,
     "File::Spec" => 0,
-    "Test::More" => 0
+    "Test::More" => "0.96"
   },
   "VERSION" => "0.001",
   "test" => {
@@ -43,15 +45,17 @@ my %WriteMakefileArgs = (
 
 
 my %FallbackPrereqs = (
+  "B" => 0,
+  "Capture::Tiny" => 0,
   "Carp" => 0,
   "Cwd" => 0,
   "Exporter" => "5.57",
   "ExtUtils::MakeMaker" => "6.17",
+  "File::Copy" => 0,
   "File::Path" => "2.01",
   "File::Spec" => 0,
   "File::Temp" => 0,
-  "Test::Builder" => 0,
-  "Test::More" => 0,
+  "Test::More" => "0.96",
   "strict" => 0,
   "warnings" => 0
 );

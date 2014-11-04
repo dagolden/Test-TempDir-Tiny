@@ -3,11 +3,13 @@ use strict;
 use warnings;
 use Cwd qw/abs_path/;
 use File::Copy qw/copy/;
-use Test::More 0.96;
+use Test::More;
 use Capture::Tiny qw/capture/;
 
 # dogfood
 use Test::TempDir::Tiny;
+
+plan tests => 8;
 
 my $cwd  = abs_path('.');
 my $lib  = abs_path('lib');
@@ -51,7 +53,6 @@ ok( -d "$failing/t/tmp/t_01-fail_t", "failing test directory was not cleaned up"
   or diag "OUT: $out";
 ok( -d "$failing/t/tmp", "failing root directory was not cleaned up" );
 
-done_testing;
 # COPYRIGHT
 
 # vim: ts=4 sts=4 sw=4 et:
