@@ -38,9 +38,9 @@ my ( $out, $err, $rc ) =
   capture { system( $perl, qw/-MTest::Harness -e runtests(@ARGV)/, 't/01-pass.t' ) };
 chdir $cwd;
 
-ok( !-d "$passing/t/tmp/t_01-pass_t", "passing test directory was cleaned up" )
+ok( !-d "$passing/tmp/t_01-pass_t", "passing test directory was cleaned up" )
   or diag "OUT: $out";
-ok( !-d "$passing/t/tmp", "passing root directory was cleaned up" );
+ok( !-d "$passing/tmp", "passing root directory was cleaned up" );
 
 # failing
 
@@ -49,9 +49,9 @@ chdir $failing;
   capture { system( $perl, qw/-MTest::Harness -e runtests(@ARGV)/, 't/01-fail.t' ) };
 chdir $cwd;
 
-ok( -d "$failing/t/tmp/t_01-fail_t", "failing test directory was not cleaned up" )
+ok( -d "$failing/tmp/t_01-fail_t", "failing test directory was not cleaned up" )
   or diag "OUT: $out";
-ok( -d "$failing/t/tmp", "failing root directory was not cleaned up" );
+ok( -d "$failing/tmp", "failing root directory was not cleaned up" );
 
 # COPYRIGHT
 

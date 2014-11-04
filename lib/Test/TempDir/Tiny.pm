@@ -22,28 +22,33 @@ my ( $ORIGINAL_PID, $ORIGINAL_CWD ) = ( $$, abs_path(".") );
 
     $dir = tempdir();          # .../default_1/
     $dir = tempdir("label");   # .../label_1/
-    $dir = tempdir("label");   # .../label_2/
-    $dir = tempdir("a space"); # .../a_space_1/
 
 Creates a directory underneath a test-file-specific temporary directory and
 returns the absolute path to it.
 
 The function takes a single argument as a label for the directory or defaults
-to "default".  The label will have everything except alphanumerics, underscore
-and dash replaced with underscore and then a counter value will be appended.
-This allows use of a labeled directory in loops:
+to "default". An incremental counter value will be appended to allow a label to
+be used within a loop with distinct temporary directories:
+
+    # t/foo.t
 
     for ( 1 .. 3 ) {
         tempdir("in loop");
     }
 
     # creates:
-    #   .../in_loop_1
-    #   .../in_loop_2
-    #   .../in_loop_3
+    #   ./tmp/t_foo_t/in_loop_1
+    #   ./tmp/t_foo_t/in_loop_2
+    #   ./tmp/t_foo_t/in_loop_3
 
-The test-file-specific directory will be cleaned up with an END block if the
-current test file is passing.
+If the label contains any characters besides alphanumerics, underscore
+and dash, they will be replaced with underscore.
+
+    $dir = tempdir("a space"); # .../a_space_1/
+    $dir = tempdir("a!bang");  # .../a_bang_1/
+
+The test-file-specific directory and all directories within it will be cleaned
+up with an END block if the current test file passes tests.
 
 =cut
 
@@ -59,9 +64,9 @@ sub tempdir {
 }
 
 sub _init {
-    # ROOT_DIR is t/tmp or a File::Temp object
+    # ROOT_DIR is ./tmp or a File::Temp object
     if ( -w 't' ) {
-        $ROOT_DIR = abs_path('t/tmp');
+        $ROOT_DIR = abs_path('./tmp');
         if ( -e $ROOT_DIR ) {
             croak("$ROOT_DIR is not a directory")
               unless -d $ROOT_DIR;
@@ -133,24 +138,24 @@ portability and zero non-core dependencies.
 The L</tempdir> function is exported by default.  When called, it constructs a
 directory tree to hold temporary directories.
 
-If the F<t> directory is writable, the root for directories will be F<t/tmp>.
-Otherwise, a L<File::Temp> directory will be created wherever temporary
-directories are stored for your system.
+If the current directory is writable, the root for directories will be
+F<./tmp>.  Otherwise, a L<File::Temp> directory will be created wherever
+temporary directories are stored for your system.
 
 Every F<*.t> file gets its own subdirectory under the root based on the test
 filename, but with slashes and periods replaced with underscores.  For example,
-F<t/foo.t> would get a test-file-specific subdirectory F<t/tmp/t_foo_t/>.
+F<t/foo.t> would get a test-file-specific subdirectory F<./tmp/t_foo_t/>.
 Directories created by L</tempdir> get put in that directory.  This makes it
 very easy to find files later if tests fail.
 
 When the test file exits, if all tests passed, then the test-file-specific
 directory is recursively removed.
 
-If test failed and the root directory is F<t/tmp>, the test-file-specific
+If a test failed and the root directory is F<./tmp>, the test-file-specific
 directory sticks around for inspection.  (But if the root is a L<File::Temp>
 directory, it is always discarded).
 
-If nothing is left in F<t/tmp> (i.e. no other tests failed), then F<t/tmp>
+If nothing is left in F<./tmp> (i.e. no other test file failed), then F<./tmp>
 is cleaned up as well.
 
 =head1 SEE ALSO
