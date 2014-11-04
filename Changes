@@ -2,6 +2,16 @@ Revision history for Test-TempDir-Tiny
 
 {{$NEXT}}
 
+    [Tests]
+
+    - Added tests for non-word characters
+
+    [Documentation]
+
+    - Noted that test-file-specific dirs are cleaned when reused
+
+    - Improved synopsis examples
+
 0.001     2014-11-04 17:07:17-05:00 America/New_York
 
     - First release

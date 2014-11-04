@@ -45,7 +45,7 @@ be used within a loop with distinct temporary directories:
     #   ./tmp/t_foo_t/in_loop_3
 
 If the label contains any characters besides alphanumerics, underscore
-and dash, they will be replaced with underscore.
+and dash, they will be collapsed and replaced with a single underscore.
 
     $dir = tempdir("a space"); # .../a_space_1/
     $dir = tempdir("a!bang");  # .../a_bang_1/
@@ -126,9 +126,17 @@ END {
     use Test::More;
     use Test::TempDir::Tiny;
 
+    # default tempdirs
     $dir = tempdir();          # ./tmp/t_foo_t/default_1/
+    $dir = tempdir();          # ./tmp/t_foo_t/default_2/
+
+    # labeled tempdirs
     $dir = tempdir("label");   # ./tmp/t_foo_t/label_1/
     $dir = tempdir("label");   # ./tmp/t_foo_t/label_2/
+
+    # labels with spaces and non-word characters
+    $dir = tempdir("bar baz")  # ./tmp/t_foo_t/bar_baz_1/
+    $dir = tempdir("!!!bang")  # ./tmp/t_foo_t/_bang_1/
 
 =head1 DESCRIPTION
 
@@ -151,6 +159,9 @@ filename, but with slashes and periods replaced with underscores.  For example,
 F<t/foo.t> would get a test-file-specific subdirectory F<./tmp/t_foo_t/>.
 Directories created by L</tempdir> get put in that directory.  This makes it
 very easy to find files later if tests fail.
+
+The test-file-specific name is consistent from run-to-run.  If an old directory
+already exists, it will be removed.
 
 When the test file exits, if all tests passed, then the test-file-specific
 directory is recursively removed.

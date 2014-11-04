@@ -22,7 +22,7 @@ BEGIN {
 # dogfood
 use Test::TempDir::Tiny;
 
-plan tests => 8;
+plan tests => 10;
 
 my $cwd  = abs_path('.');
 my $lib  = abs_path('lib');
@@ -34,6 +34,14 @@ my $root = Test::TempDir::Tiny::_root_dir();
 ok( -d $root, "root dir exists" );
 like( $dir, qr{$root/t_basic_t/default_1$}, "default directory created" );
 
+my $dir2 = tempdir();
+like( $dir2, qr{$root/t_basic_t/default_2$}, "second default directory created" );
+
+# non-word chars
+my $bang = tempdir("!!bang!!");
+like( $bang, qr{$root/t_basic_t/_bang__1$}, "!!bang!! directory created" );
+
+# set up pass/fail dirs
 my $passing = tempdir("passing");
 mkdir "$passing/t";
 copy "corpus/01-pass.t", "$passing/t/01-pass.t";
