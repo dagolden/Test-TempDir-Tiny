@@ -10,16 +10,18 @@ our $VERSION = '0.003';
 use Exporter 5.57 qw/import/;
 our @EXPORT = qw/tempdir/;
 
-use Carp qw/croak/;
+use Carp qw/confess/;
 use Cwd qw/abs_path/;
+use Errno qw/EEXIST ENOENT/;
 {
     no warnings 'numeric'; # loading File::Path has non-numeric warnings on 5.8
     use File::Path 2.01 qw/remove_tree/;
 }
 use File::Temp;
+use Time::HiRes qw/usleep/;
 
 my ( $ROOT_DIR, $TEST_DIR, %COUNTER );
-my ( $ORIGINAL_PID, $ORIGINAL_CWD ) = ( $$, abs_path(".") );
+my ( $ORIGINAL_PID, $ORIGINAL_CWD, $TRIES, $DELAY ) = ( $$, abs_path("."), 100, 50 );
 
 =func tempdir
 
@@ -62,21 +64,15 @@ sub tempdir {
     _init() unless $ROOT_DIR && $TEST_DIR;
     my $suffix = ++$COUNTER{$label};
     my $subdir = "$TEST_DIR/${label}_${suffix}";
-    mkdir $subdir or die $!;
+    mkdir $subdir or confess("Couldn't create $subdir: $!");
     return $subdir;
 }
 
 sub _init {
+
     # ROOT_DIR is ./tmp or a File::Temp object
     if ( -w 't' ) {
         $ROOT_DIR = abs_path('./tmp');
-        if ( -e $ROOT_DIR ) {
-            croak("$ROOT_DIR is not a directory")
-              unless -d $ROOT_DIR;
-        }
-        else {
-            mkdir $ROOT_DIR or die $!;
-        }
     }
     else {
         $ROOT_DIR = File::Temp->newdir( TMPDIR => 1 );
@@ -85,12 +81,46 @@ sub _init {
     # TEST_DIR is based on .t path under ROOT_DIR
     ( my $dirname = $0 ) =~ tr{\\/.}{_};
     $TEST_DIR = "$ROOT_DIR/$dirname";
-    if ( !-d $TEST_DIR ) {
-        mkdir $TEST_DIR or die $!;
-    }
-    else {
+
+    # If it exists from a previous run, clear it out
+    if ( -d $TEST_DIR ) {
         remove_tree( $TEST_DIR, { safe => 0, keep_root => 1 } );
+        return;
     }
+
+    # Need to create directory, but constructing nested directories can never
+    # be atomic, so we have to retry if the tempdir root gets deleted out from
+    # under us (perhaps by a parallel test)
+
+    for my $n ( 1 .. $TRIES ) {
+        # Unless it's an object, we need to ensure $ROOT_DIR exists.
+        # Failing to mkdir is OK as long as error is EEXIST
+        if ( !ref($ROOT_DIR) && !mkdir($ROOT_DIR) ) {
+            confess("Couldn't create $ROOT_DIR: $!")
+              unless $! == EEXIST;
+        }
+
+        # If mkdir succeeds, we're done
+        return if mkdir $TEST_DIR;
+
+        # Anything other than ENOENT is a real error
+        if ( $! != ENOENT ) {
+            confess("Couldn't create $TEST_DIR: $!");
+        }
+
+        # ENOENT means $ROOT_DIR was removed from under us or is not a
+        # directory.  Only the latter case is a real error.
+        if ( -e $ROOT_DIR && !-d _ ) {
+            confess("$ROOT_DIR is not a directory");
+        }
+
+        usleep($DELAY) if $n < $TRIES;
+    }
+
+    warn "Couldn't create $TEST_DIR in $TRIES tries.\n"
+      . "Using a regular tempdir instead.\n";
+
+    $TEST_DIR = File::Temp->newdir( TMPDIR => 1 );
     return;
 }
 
@@ -99,7 +129,9 @@ sub _cleanup {
     if ( $ROOT_DIR && !ref $ROOT_DIR && -d $ROOT_DIR ) {
         if ( not $? ) {
             chdir $ORIGINAL_CWD;
-            remove_tree( $TEST_DIR, { safe => 0 } ) if -d $TEST_DIR;
+            # clean up test directory unless it was a fallback object
+            remove_tree( $TEST_DIR, { safe => 0 } )
+              if -d $TEST_DIR && !ref($TEST_DIR);
         }
         # will fail if there are any children, but we don't care
         rmdir $ROOT_DIR;
@@ -172,6 +204,11 @@ directory, it is always discarded).
 
 If nothing is left in F<./tmp> (i.e. no other test file failed), then F<./tmp>
 is cleaned up as well.
+
+This module attempts to avoid race conditions due to parallel testing.  In
+extreme cases, the test-file-specific subdirectory might be created as a
+regular L<File::Temp> directory rather than in F<./tmp>.  In such a case,
+a warning will be issued.
 
 =head1 SEE ALSO
 

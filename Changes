@@ -2,6 +2,11 @@ Revision history for Test-TempDir-Tiny
 
 {{$NEXT}}
 
+    [Fixes]
+
+    - Changed temp directory creation to avoid race conditions under
+      parallel testing
+
 0.002     2014-11-05 06:09:24-05:00 America/New_York
 
     [Tests]
