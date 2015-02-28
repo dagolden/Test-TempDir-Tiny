@@ -18,7 +18,6 @@ use Errno qw/EEXIST ENOENT/;
     use File::Path 2.01 qw/remove_tree/;
 }
 use File::Temp;
-use Time::HiRes qw/usleep/;
 
 my ( $ROOT_DIR, $TEST_DIR, %COUNTER );
 my ( $ORIGINAL_PID, $ORIGINAL_CWD, $TRIES, $DELAY ) = ( $$, abs_path("."), 100, 50 );
@@ -114,7 +113,7 @@ sub _init {
             confess("$ROOT_DIR is not a directory");
         }
 
-        usleep($DELAY) if $n < $TRIES;
+        select(undef, undef, undef, $DELAY/1000) if $n < $TRIES;
     }
 
     warn "Couldn't create $TEST_DIR in $TRIES tries.\n"
