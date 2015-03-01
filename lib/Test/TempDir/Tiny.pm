@@ -20,7 +20,8 @@ use Errno qw/EEXIST ENOENT/;
 use File::Temp;
 
 my ( $ROOT_DIR, $TEST_DIR, %COUNTER );
-my ( $ORIGINAL_PID, $ORIGINAL_CWD, $TRIES, $DELAY ) = ( $$, abs_path("."), 100, 50 );
+my ( $ORIGINAL_PID, $ORIGINAL_CWD, $TRIES, $DELAY ) =
+  ( $$, abs_path("."), 100, 50 / 1000 );
 
 =func tempdir
 
@@ -113,7 +114,7 @@ sub _init {
             confess("$ROOT_DIR is not a directory");
         }
 
-        select(undef, undef, undef, $DELAY/1000) if $n < $TRIES;
+        select( undef, undef, undef, $DELAY ) if $n < $TRIES;
     }
 
     warn "Couldn't create $TEST_DIR in $TRIES tries.\n"
