@@ -17,6 +17,7 @@ use Errno qw/EEXIST ENOENT/;
     no warnings 'numeric'; # loading File::Path has non-numeric warnings on 5.8
     use File::Path 2.01 qw/remove_tree/;
 }
+use File::Spec::Functions qw/catdir/;
 use File::Temp;
 
 my ( $ROOT_DIR, $TEST_DIR, %COUNTER );
@@ -63,7 +64,7 @@ sub tempdir {
 
     _init() unless $ROOT_DIR && $TEST_DIR;
     my $suffix = ++$COUNTER{$label};
-    my $subdir = "$TEST_DIR/${label}_${suffix}";
+    my $subdir = catdir( $TEST_DIR, "${label}_${suffix}" );
     mkdir $subdir or confess("Couldn't create $subdir: $!");
     return $subdir;
 }
@@ -72,7 +73,7 @@ sub _init {
 
     # ROOT_DIR is ./tmp or a File::Temp object
     if ( -w 't' ) {
-        $ROOT_DIR = "$ORIGINAL_CWD/tmp";
+        $ROOT_DIR = catdir( $ORIGINAL_CWD, "tmp" );
     }
     else {
         $ROOT_DIR = File::Temp->newdir( TMPDIR => 1 );
@@ -80,7 +81,7 @@ sub _init {
 
     # TEST_DIR is based on .t path under ROOT_DIR
     ( my $dirname = $0 ) =~ tr{\\/.}{_};
-    $TEST_DIR = "$ROOT_DIR/$dirname";
+    $TEST_DIR = catdir( $ROOT_DIR, $dirname );
 
     # If it exists from a previous run, clear it out
     if ( -d $TEST_DIR ) {
