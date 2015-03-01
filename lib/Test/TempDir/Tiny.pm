@@ -72,7 +72,7 @@ sub _init {
 
     # ROOT_DIR is ./tmp or a File::Temp object
     if ( -w 't' ) {
-        $ROOT_DIR = abs_path('./tmp');
+        $ROOT_DIR = "$ORIGINAL_CWD/tmp";
     }
     else {
         $ROOT_DIR = File::Temp->newdir( TMPDIR => 1 );
