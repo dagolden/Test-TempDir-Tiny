@@ -2,7 +2,15 @@ Revision history for Test-TempDir-Tiny
 
 {{$NEXT}}
 
-    - drop Time::HiRes in favor of built-in select to implement a small sleep
+    [Changes]
+
+    - Temporary directories are returned with platform-native separators
+
+    - Drop Time::HiRes in favor of built-in select to implement a small sleep
+
+    [Fixes]
+
+    - Fixes tests on Windows
 
 0.003     2015-01-04 06:30:28-05:00 America/New_York
 

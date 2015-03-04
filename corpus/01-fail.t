@@ -3,6 +3,11 @@ use warnings;
 use Test::More;
 use Test::TempDir::Tiny;
 
+sub _unixify {
+    (my $path = shift) =~ s{\\}{/}g;
+    return $path;
+}
+
 my @cases = (
     [ undef, 'default_1' ],
     [ 'label'        => 'label_1' ],
@@ -16,7 +21,7 @@ for my $c (@cases) {
     my ( $input, $dir ) = @$c;
     my $got    = tempdir($input);
     my $expect = "t_01-fail_t/$dir";
-    like( $got, qr/\Q$expect\E$/, "$dir" );
+    like( _unixify($got), qr/\Q$expect\E$/, "$dir" );
 }
 
 fail("just give up already, OK");

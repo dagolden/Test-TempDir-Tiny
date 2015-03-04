@@ -30,7 +30,8 @@ my ( $ORIGINAL_PID, $ORIGINAL_CWD, $TRIES, $DELAY ) =
     $dir = tempdir("label");   # .../label_1/
 
 Creates a directory underneath a test-file-specific temporary directory and
-returns the absolute path to it.
+returns the absolute path to it in platform-native form (i.e. with backslashes
+on Windows).
 
 The function takes a single argument as a label for the directory or defaults
 to "default". An incremental counter value will be appended to allow a label to
