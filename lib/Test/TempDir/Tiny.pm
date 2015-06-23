@@ -76,8 +76,8 @@ sub _init {
     if ( -w 't' ) {
         $ROOT_DIR = catdir( $ORIGINAL_CWD, "tmp" );
     }
-    elsif ( -w '../t' ) {  #  are we running inside the t/ dir?
-        $ROOT_DIR = catdir( $ORIGINAL_CWD, "..", "tmp" );
+    elsif ( -w '../t' ) { #  are we running inside the t/ dir?
+        $ROOT_DIR = abs_path( catdir( $ORIGINAL_CWD, "..", "tmp" ) );
     }
     else {
         $ROOT_DIR = File::Temp->newdir( TMPDIR => 1 );
