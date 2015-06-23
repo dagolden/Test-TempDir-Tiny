@@ -1,4 +1,4 @@
-use 5.008001;
+use 5.006;
 use strict;
 use warnings;
 
@@ -106,11 +106,15 @@ sub _init {
         }
 
         # If it's not a File::Temp object, we want to normalize it now
-        #  (because abs_path might fail if it doesn't exist)
+        # (because abs_path might fail if it doesn't exist)
         $ROOT_DIR = abs_path($ROOT_DIR) unless ref($ROOT_DIR);
 
         # If mkdir succeeds, we're done
-        return if mkdir $TEST_DIR;
+        if ( mkdir $TEST_DIR ) {
+            # similarly normalize only after we're sure it exists
+            $TEST_DIR = abs_path($TEST_DIR);
+            return;
+        }
 
         # Anything other than ENOENT is a real error
         if ( $! != ENOENT ) {
