@@ -151,8 +151,11 @@ sub _cleanup {
             remove_tree( $TEST_DIR, { safe => 0 } )
               if -d $TEST_DIR && !ref($TEST_DIR);
         }
-        # will fail if there are any children, but we don't care
-        rmdir $ROOT_DIR;
+
+        # Remove root unless it's a symlink, which a user might create to force
+        # it to another drive.  This will fail if there are any children, but
+        # we don't care
+        rmdir $ROOT_DIR unless -l $ROOT_DIR;
     }
 }
 
@@ -221,7 +224,7 @@ directory sticks around for inspection.  (But if the root is a L<File::Temp>
 directory, it is always discarded).
 
 If nothing is left in F<./tmp> (i.e. no other test file failed), then F<./tmp>
-is cleaned up as well.
+is cleaned up as well (unless it's a symlink).
 
 This module attempts to avoid race conditions due to parallel testing.  In
 extreme cases, the test-file-specific subdirectory might be created as a
