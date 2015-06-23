@@ -22,7 +22,7 @@ BEGIN {
 }
 
 sub _unixify {
-    (my $path = shift) =~ s{\\}{/}g;
+    ( my $path = shift ) =~ s{\\}{/}g;
     return $path;
 }
 
@@ -36,30 +36,50 @@ my $lib  = abs_path('lib');
 my $perl = abs_path($^X);
 
 # default directory
-my $dir  = tempdir();
-my $root = Test::TempDir::Tiny::_root_dir();
+my $dir       = tempdir();
+my $root      = Test::TempDir::Tiny::_root_dir();
 my $unix_root = _unixify($root);
 
 ok( -d $root, "root dir exists" );
-like( _unixify($dir), qr{$unix_root/t_basic_t/default_1$}, "default directory created" );
+like(
+    _unixify($dir),
+    qr{$unix_root/t_basic_t/default_1$},
+    "default directory created"
+);
 
 my $dir2 = tempdir();
-like( _unixify($dir2), qr{$unix_root/t_basic_t/default_2$}, "second default directory created" );
+like(
+    _unixify($dir2),
+    qr{$unix_root/t_basic_t/default_2$},
+    "second default directory created"
+);
 
 # non-word chars
 my $bang = tempdir("!!bang!!");
-like( _unixify($bang), qr{$unix_root/t_basic_t/_bang__1$}, "!!bang!! directory created" );
+like(
+    _unixify($bang),
+    qr{$unix_root/t_basic_t/_bang__1$},
+    "!!bang!! directory created"
+);
 
 # set up pass/fail dirs
-my $passing = _unixify(tempdir("passing"));
+my $passing = _unixify( tempdir("passing") );
 mkdir "$passing/t";
 copy "corpus/01-pass.t", "$passing/t/01-pass.t";
-like( _unixify($passing), qr{$unix_root/t_basic_t/passing_1$}, "passing directory created" );
+like(
+    _unixify($passing),
+    qr{$unix_root/t_basic_t/passing_1$},
+    "passing directory created"
+);
 
-my $failing = _unixify(tempdir("failing"));
+my $failing = _unixify( tempdir("failing") );
 mkdir "$failing/t";
 copy "corpus/01-fail.t", "$failing/t/01-fail.t" or die $!;
-like( _unixify($failing), qr{$unix_root/t_basic_t/failing_1$}, "failing directory created" );
+like(
+    _unixify($failing),
+    qr{$unix_root/t_basic_t/failing_1$},
+    "failing directory created"
+);
 
 # passing
 
