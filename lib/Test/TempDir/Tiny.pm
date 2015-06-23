@@ -8,7 +8,7 @@ package Test::TempDir::Tiny;
 our $VERSION = '0.005';
 
 use Exporter 5.57 qw/import/;
-our @EXPORT = qw/tempdir/;
+our @EXPORT = qw/tempdir in_tempdir/;
 
 use Carp qw/confess/;
 use Cwd qw/abs_path/;
@@ -68,6 +68,53 @@ sub tempdir {
     my $subdir = catdir( $TEST_DIR, "${label}_${suffix}" );
     mkdir $subdir or confess("Couldn't create $subdir: $!");
     return $subdir;
+}
+
+=func in_tempdir
+
+    in_tempdir "label becomes name" => sub {
+        my $cwd = shift;
+        # this happens in tempdir
+    };
+
+Given a label and a code reference, creates a temporary directory based on the
+label (following the rules of L</tempdir>), changes to that directory, runs the
+code, then changes back to the original directory.
+
+The temporary directory path is given as an argument to the code reference.
+The code runs in the same context as C<in_tempdir> and C<in_tempdir> returns
+the return value(s) from the code.
+
+When the code finishes (even if it dies), C<in_tempdir> will change back to the
+original directory if it can, to the root if it can't, and will rethrow any
+fatal errors.
+
+=cut
+
+sub in_tempdir {
+    my ( $label, $code ) = @_;
+    my $wantarray = wantarray;
+    my $cwd       = abs_path(".");
+    my $tempdir   = tempdir($label);
+
+    chdir $tempdir;
+    my (@ret);
+    my $ok = eval {
+        if ($wantarray) {
+            @ret = $code->($tempdir);
+        }
+        elsif ( defined $wantarray ) {
+            $ret[0] = $code->($tempdir);
+        }
+        else {
+            $code->($tempdir);
+        }
+        1;
+    };
+    my $err = $@;
+    chdir $cwd or chdir "/";
+    die $err if !$ok;
+    return $wantarray ? @ret : $ret[0];
 }
 
 sub _inside_t_dir {
@@ -194,6 +241,12 @@ END {
     $dir = tempdir("bar baz")  # ./tmp/t_foo_t/bar_baz_1/
     $dir = tempdir("!!!bang")  # ./tmp/t_foo_t/_bang_1/
 
+    # run code in a temporary directory
+    in_tempdir "label becomes name" => sub {
+        my $cwd = shift;
+        # do stuff in a tempdir
+    };
+
 =head1 DESCRIPTION
 
 This module works with L<Test::More> to create temporary directories that stick
@@ -203,8 +256,7 @@ It is loosely based on L<Test::TempDir>, but with less complexity, greater
 portability and zero non-core dependencies.  (L<Capture::Tiny> is recommended
 for testing.)
 
-The L</tempdir> function is exported by default.  When called, it constructs a
-directory tree to hold temporary directories.
+The L</tempdir> and L</in_tempdir> functions are exported by default.
 
 If the current directory is writable, the root for directories will be
 F<./tmp>.  Otherwise, a L<File::Temp> directory will be created wherever
