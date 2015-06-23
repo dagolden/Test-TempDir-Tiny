@@ -120,7 +120,7 @@ if ( $perl !~ /\s/ && $lib !~ /\s/ ) {
     mkdir "t";
     chdir "t";
     my $tmpdir2 = qx/$perl -I$lib -MTest::TempDir::Tiny -wl -e print -e tempdir/;
-    my $expect  = abs_path('../tmp');
+    my $expect = _unixify( File::Spec->catdir( abs_path('..'), 'tmp' ) );
     like( _unixify($tmpdir2), qr{^$expect}, "inside t, tempdir is in ../tmp" );
 
     chdir $cwd;

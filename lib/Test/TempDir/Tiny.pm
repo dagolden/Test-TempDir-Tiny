@@ -77,7 +77,7 @@ sub _init {
         $ROOT_DIR = catdir( $ORIGINAL_CWD, "tmp" );
     }
     elsif ( -w '../t' ) { #  are we running inside the t/ dir?
-        $ROOT_DIR = abs_path( catdir( $ORIGINAL_CWD, "..", "tmp" ) );
+        $ROOT_DIR = catdir( $ORIGINAL_CWD, "..", "tmp" );
     }
     else {
         $ROOT_DIR = File::Temp->newdir( TMPDIR => 1 );
@@ -104,6 +104,10 @@ sub _init {
             confess("Couldn't create $ROOT_DIR: $!")
               unless $! == EEXIST;
         }
+
+        # If it's not a File::Temp object, we want to normalize it now
+        #  (because abs_path might fail if it doesn't exist)
+        $ROOT_DIR = abs_path($ROOT_DIR) unless ref($ROOT_DIR);
 
         # If mkdir succeeds, we're done
         return if mkdir $TEST_DIR;
