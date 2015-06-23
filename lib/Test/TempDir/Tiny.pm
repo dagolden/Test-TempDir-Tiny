@@ -97,7 +97,7 @@ sub in_tempdir {
     my $cwd       = abs_path(".");
     my $tempdir   = tempdir($label);
 
-    chdir $tempdir;
+    chdir $tempdir or die "Can't chdir to '$tempdir'";
     my (@ret);
     my $ok = eval {
         if ($wantarray) {
@@ -112,7 +112,7 @@ sub in_tempdir {
         1;
     };
     my $err = $@;
-    chdir $cwd or chdir "/";
+    chdir $cwd or chdir "/" or die "Can't chdir to either '$cwd' or '/'";
     die $err if !$ok;
     return $wantarray ? @ret : $ret[0];
 }
