@@ -4,6 +4,11 @@ Revision history for Test-TempDir-Tiny
 
 0.004     2015-03-04 16:53:21-05:00 America/New_York
 
+    [Added]
+
+    - Setting $ENV{PERL_TEST_TEMPDIR_TINY_NOCLEANUP} to a true value
+      will prevent any directories from being cleaned up
+
     [Changes]
 
     - Temporary directories are returned with platform-native separators

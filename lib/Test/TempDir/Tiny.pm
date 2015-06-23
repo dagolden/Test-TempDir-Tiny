@@ -144,6 +144,7 @@ sub _init {
 }
 
 sub _cleanup {
+    return if $ENV{PERL_TEST_TEMPDIR_TINY_NOCLEANUP};
     if ( $ROOT_DIR && -d $ROOT_DIR ) {
         # always cleanup if root is in system temp directory, otherwise
         # only clean up if exiting with non-zero value
@@ -232,6 +233,13 @@ This module attempts to avoid race conditions due to parallel testing.  In
 extreme cases, the test-file-specific subdirectory might be created as a
 regular L<File::Temp> directory rather than in F<./tmp>.  In such a case,
 a warning will be issued.
+
+=head1 ENVIRONMENT
+
+=head2 C<PERL_TEST_TEMPDIR_TINY_NOCLEANUP>
+
+When this environment variable is true, directories will not be cleaned up,
+even if tests pass.
 
 =head1 SEE ALSO
 
