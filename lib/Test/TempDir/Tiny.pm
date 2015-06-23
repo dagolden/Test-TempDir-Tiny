@@ -21,8 +21,8 @@ use File::Spec::Functions qw/catdir/;
 use File::Temp;
 
 my ( $ROOT_DIR, $TEST_DIR, %COUNTER );
-my ( $ORIGINAL_PID, $ORIGINAL_CWD, $TRIES, $DELAY ) =
-  ( $$, abs_path("."), 100, 50 / 1000 );
+my ( $ORIGINAL_PID, $ORIGINAL_CWD, $TRIES, $DELAY, $SYSTEM_TEMP ) =
+  ( $$, abs_path("."), 100, 50 / 1000, 0 );
 
 =func tempdir
 
@@ -85,7 +85,8 @@ sub _init {
         $ROOT_DIR = catdir( $ORIGINAL_CWD, "..", "tmp" );
     }
     else {
-        $ROOT_DIR = File::Temp->newdir( TMPDIR => 1 );
+        $ROOT_DIR = File::Temp::tempdir( TMPDIR => 1, CLEANUP => 1 );
+        $SYSTEM_TEMP = 1;
     }
 
     # TEST_DIR is based on .t path under ROOT_DIR
@@ -103,16 +104,15 @@ sub _init {
     # under us (perhaps by a parallel test)
 
     for my $n ( 1 .. $TRIES ) {
-        # Unless it's an object, we need to ensure $ROOT_DIR exists.
         # Failing to mkdir is OK as long as error is EEXIST
-        if ( !ref($ROOT_DIR) && !mkdir($ROOT_DIR) ) {
+        if ( !mkdir($ROOT_DIR) ) {
             confess("Couldn't create $ROOT_DIR: $!")
               unless $! == EEXIST;
         }
 
-        # If it's not a File::Temp object, we want to normalize it now
-        # (because abs_path might fail if it doesn't exist)
-        $ROOT_DIR = abs_path($ROOT_DIR) unless ref($ROOT_DIR);
+        # Normalize after we know it exists, because abs_path might fail on
+        # some platforms if it doesn't exist
+        $ROOT_DIR = abs_path($ROOT_DIR);
 
         # If mkdir succeeds, we're done
         if ( mkdir $TEST_DIR ) {
@@ -138,23 +138,25 @@ sub _init {
     warn "Couldn't create $TEST_DIR in $TRIES tries.\n"
       . "Using a regular tempdir instead.\n";
 
-    $TEST_DIR = File::Temp->newdir( TMPDIR => 1 );
+    # Because fallback isn't under root, we let File::Temp clean it up.
+    $TEST_DIR = File::Temp::tempdir( TMPDIR => 1, CLEANUP => 1 );
     return;
 }
 
 sub _cleanup {
-    # A File::Temp::Dir ROOT_DIR always gets to clean itself up
-    if ( $ROOT_DIR && !ref $ROOT_DIR && -d $ROOT_DIR ) {
-        if ( not $? ) {
+    if ( $ROOT_DIR && -d $ROOT_DIR ) {
+        # always cleanup if root is in system temp directory, otherwise
+        # only clean up if exiting with non-zero value
+        if ( $SYSTEM_TEMP or not $? ) {
             chdir $ORIGINAL_CWD;
-            # clean up test directory unless it was a fallback object
             remove_tree( $TEST_DIR, { safe => 0 } )
-              if -d $TEST_DIR && !ref($TEST_DIR);
+              if -d $TEST_DIR;
         }
 
-        # Remove root unless it's a symlink, which a user might create to force
-        # it to another drive.  This will fail if there are any children, but
-        # we don't care
+        # Remove root unless it's a symlink, which a user might create to
+        # force it to another drive.  Removal will fail if there are any
+        # children, but we ignore errors as other tests might be running
+        # in parallel and have tempdirs there.
         rmdir $ROOT_DIR unless -l $ROOT_DIR;
     }
 }
