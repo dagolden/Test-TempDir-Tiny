@@ -10,6 +10,8 @@ Revision history for Test-TempDir-Tiny
 
     - Drop Time::HiRes in favor of built-in select to implement a small sleep
 
+    - Lowered minimum Perl prerequisite to 5.6
+
     [Fixes]
 
     - Fixes tests on Windows
