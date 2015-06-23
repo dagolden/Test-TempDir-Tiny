@@ -3,6 +3,8 @@ use strict;
 use warnings;
 use Cwd qw/abs_path/;
 use File::Copy qw/copy/;
+use File::Spec;
+use File::Temp 0.19;
 use Test::More;
 
 # make Capture::Tiny optional
@@ -27,7 +29,7 @@ sub _unixify {
 # dogfood
 use Test::TempDir::Tiny;
 
-plan tests => 10;
+plan tests => 12;
 
 my $cwd  = abs_path('.');
 my $lib  = abs_path('lib');
@@ -82,6 +84,27 @@ chdir $cwd;
 ok( -d "$failing/tmp/t_01-fail_t", "failing test directory was not cleaned up" )
   or diag "OUT: $out";
 ok( -d "$failing/tmp", "failing root directory was not cleaned up" );
+
+# can't do some tests portably if Perl or lib has spaces in path
+if ( $perl !~ /\s/ && $lib !~ /\s/ ) {
+
+    # test when not in dist directory with t
+    my $without_t_dir = File::Temp->newdir;
+    chdir $without_t_dir;
+    my $tmpdir1   = qx/$perl -I$lib -MTest::TempDir::Tiny -wl -e print -e tempdir/;
+    my $real_temp = _unixify( File::Spec->tmpdir );
+    like( _unixify($tmpdir1), qr{^$real_temp},
+        "without t, tempdir is in File::Spec->tmpdir" );
+
+    # test when *inside* a t directory
+    mkdir "t";
+    chdir "t";
+    my $tmpdir2 = qx/$perl -I$lib -MTest::TempDir::Tiny -wl -e print -e tempdir/;
+    my $expect  = abs_path('../tmp');
+    like( _unixify($tmpdir2), qr{^$expect}, "inside t, tempdir is in ../tmp" );
+
+    chdir $cwd;
+}
 
 # COPYRIGHT
 
