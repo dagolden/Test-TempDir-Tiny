@@ -149,7 +149,9 @@ sub _cleanup {
         # always cleanup if root is in system temp directory, otherwise
         # only clean up if exiting with non-zero value
         if ( $SYSTEM_TEMP or not $? ) {
-            chdir $ORIGINAL_CWD;
+            chdir $ORIGINAL_CWD
+              or chdir "/"
+              or warn "Can't chdir to '$ORIGINAL_CWD' or '/'. Cleanup might fail.";
             remove_tree( $TEST_DIR, { safe => 0 } )
               if -d $TEST_DIR;
         }
