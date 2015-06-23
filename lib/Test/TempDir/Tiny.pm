@@ -70,13 +70,18 @@ sub tempdir {
     return $subdir;
 }
 
+sub _inside_t_dir {
+    -d "../t" && abs_path(".") eq abs_path("../t");
+}
+
 sub _init {
 
-    # ROOT_DIR is ./tmp or a File::Temp object
-    if ( -w 't' ) {
-        $ROOT_DIR = catdir( $ORIGINAL_CWD, "tmp" );
+    my $DEFAULT_ROOT = catdir( $ORIGINAL_CWD, "tmp" );
+
+    if ( -d 't' && ( -w $DEFAULT_ROOT || -w '.' ) ) {
+        $ROOT_DIR = $DEFAULT_ROOT;
     }
-    elsif ( -w '../t' ) { #  are we running inside the t/ dir?
+    elsif ( _inside_t_dir() && ( -w '../$DEFAULT_ROOT' || -w '..' ) ) {
         $ROOT_DIR = catdir( $ORIGINAL_CWD, "..", "tmp" );
     }
     else {
