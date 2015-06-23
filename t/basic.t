@@ -29,7 +29,7 @@ sub _unixify {
 # dogfood
 use Test::TempDir::Tiny;
 
-plan tests => 12;
+plan tests => 15;
 
 my $cwd  = abs_path('.');
 my $lib  = abs_path('lib');
@@ -125,6 +125,17 @@ if ( $perl !~ /\s/ && $lib !~ /\s/ ) {
 
     chdir $cwd;
 }
+
+# in_tempdir
+
+my $from_sub;
+in_tempdir "this is a test" => sub {
+    my $arg = _unixify( shift @_ );
+    my $cur = _unixify( abs_path(".") );
+    is( $arg, $cur, "in_tempdir passes tempdir as argument" );
+    like( $cur, qr{$unix_root/t_basic_t/this_is_a_test_1}, "cwd is correct" );
+};
+is( abs_path("."), $cwd, "back to original dir after in_tempdir" );
 
 # COPYRIGHT
 
