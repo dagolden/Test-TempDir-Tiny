@@ -2,8 +2,6 @@ Revision history for Test-TempDir-Tiny
 
 {{$NEXT}}
 
-0.004     2015-03-04 16:53:21-05:00 America/New_York
-
     [Added]
 
     - Added 'in_tempdir' function to run code reference in a temporary
@@ -14,11 +12,15 @@ Revision history for Test-TempDir-Tiny
 
     [Changes]
 
+    - Lowered minimum Perl prerequisite to 5.6 
+
+0.004     2015-03-04 16:53:21-05:00 America/New_York
+
+    [Changes]
+
     - Temporary directories are returned with platform-native separators
 
     - Drop Time::HiRes in favor of built-in select to implement a small sleep
-
-    - Lowered minimum Perl prerequisite to 5.6
 
     [Fixes]
 
