@@ -72,7 +72,7 @@ sub tempdir {
     _init() unless $ROOT_DIR && $TEST_DIR;
     my $suffix = ++$COUNTER{$label};
     my $subdir = catdir( $TEST_DIR, "${label}_${suffix}" );
-    mkdir $subdir or confess("Couldn't create $subdir: $!");
+    mkdir _untaint($subdir) or confess("Couldn't create $subdir: $!");
     return $subdir;
 }
 
@@ -135,7 +135,7 @@ sub _init {
 
     # If it exists from a previous run, clear it out
     if ( -d $TEST_DIR ) {
-        remove_tree( $TEST_DIR, { safe => 0, keep_root => 1 } );
+        remove_tree( _untaint($TEST_DIR), { safe => 0, keep_root => 1 } );
         return;
     }
 
@@ -145,7 +145,7 @@ sub _init {
 
     for my $n ( 1 .. $TRIES ) {
         # Failing to mkdir is OK as long as error is EEXIST
-        if ( !mkdir($ROOT_DIR) ) {
+        if ( !mkdir( _untaint($ROOT_DIR) ) ) {
             confess("Couldn't create $ROOT_DIR: $!")
               unless $! == EEXIST;
         }
@@ -155,7 +155,7 @@ sub _init {
         $ROOT_DIR = abs_path($ROOT_DIR);
 
         # If mkdir succeeds, we're done
-        if ( mkdir $TEST_DIR ) {
+        if ( mkdir _untaint($TEST_DIR) ) {
             # similarly normalize only after we're sure it exists
             $TEST_DIR = abs_path($TEST_DIR);
             return;
