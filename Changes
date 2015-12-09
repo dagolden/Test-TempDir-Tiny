@@ -6,6 +6,11 @@ Revision history for Test-TempDir-Tiny
 
     - Cleanup fixed to work in taint mode
 
+    [Changes]
+
+    - Raised minimum Perl prerequisite to 5.8.1 again, as 5.6 doesn't
+      have necessary features in "B"
+
 0.005     2015-07-17 16:13:55-04:00 America/New_York (TRIAL RELEASE)
 
     [Added]

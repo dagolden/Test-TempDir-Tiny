@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use 5.006;
+use 5.008001;
 
 use ExtUtils::MakeMaker 6.17;
 
@@ -12,9 +12,8 @@ my %WriteMakefileArgs = (
     "ExtUtils::MakeMaker" => "6.17"
   },
   "DISTNAME" => "Test-TempDir-Tiny",
-  "EXE_FILES" => [],
   "LICENSE" => "apache",
-  "MIN_PERL_VERSION" => "5.006",
+  "MIN_PERL_VERSION" => "5.008001",
   "NAME" => "Test::TempDir::Tiny",
   "PREREQ_PM" => {
     "B" => 0,
@@ -45,7 +44,7 @@ my %FallbackPrereqs = (
   "Carp" => 0,
   "Cwd" => 0,
   "Exporter" => "5.57",
-  "ExtUtils::MakeMaker" => "6.17",
+  "ExtUtils::MakeMaker" => 0,
   "File::Copy" => 0,
   "File::Path" => "2.01",
   "File::Spec" => 0,
