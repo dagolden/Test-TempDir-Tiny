@@ -24,6 +24,12 @@ my ( $ROOT_DIR, $TEST_DIR, %COUNTER );
 my ( $ORIGINAL_PID, $ORIGINAL_CWD, $TRIES, $DELAY, $SYSTEM_TEMP ) =
   ( $$, abs_path("."), 100, 50 / 1000, 0 );
 
+sub _untaint {
+    my $thing = shift;
+    ($thing) = $thing =~ /^(.*)$/;
+    return $thing;
+}
+
 =func tempdir
 
     $dir = tempdir();          # .../default_1/
@@ -177,16 +183,18 @@ sub _init {
     return;
 }
 
+# Relatively safe to untainted paths for these operations as they won't
+# be evaluated or passed to the shell.
 sub _cleanup {
     return if $ENV{PERL_TEST_TEMPDIR_TINY_NOCLEANUP};
     if ( $ROOT_DIR && -d $ROOT_DIR ) {
         # always cleanup if root is in system temp directory, otherwise
         # only clean up if exiting with non-zero value
         if ( $SYSTEM_TEMP or not $? ) {
-            chdir $ORIGINAL_CWD
+            chdir _untaint($ORIGINAL_CWD)
               or chdir "/"
               or warn "Can't chdir to '$ORIGINAL_CWD' or '/'. Cleanup might fail.";
-            remove_tree( $TEST_DIR, { safe => 0 } )
+            remove_tree( _untaint($TEST_DIR), { safe => 0 } )
               if -d $TEST_DIR;
         }
 
@@ -194,7 +202,7 @@ sub _cleanup {
         # force it to another drive.  Removal will fail if there are any
         # children, but we ignore errors as other tests might be running
         # in parallel and have tempdirs there.
-        rmdir $ROOT_DIR unless -l $ROOT_DIR;
+        rmdir _untaint($ROOT_DIR) unless -l $ROOT_DIR;
     }
 }
 
