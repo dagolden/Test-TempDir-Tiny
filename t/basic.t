@@ -43,14 +43,14 @@ my $unix_root = _unixify($root);
 ok( -d $root, "root dir exists" );
 like(
     _unixify($dir),
-    qr{$unix_root/t_basic_t/default_1$},
+    qr{\Q$unix_root\E/t_basic_t/default_1$},
     "default directory created"
 );
 
 my $dir2 = tempdir();
 like(
     _unixify($dir2),
-    qr{$unix_root/t_basic_t/default_2$},
+    qr{\Q$unix_root\E/t_basic_t/default_2$},
     "second default directory created"
 );
 
@@ -58,7 +58,7 @@ like(
 my $bang = tempdir("!!bang!!");
 like(
     _unixify($bang),
-    qr{$unix_root/t_basic_t/_bang__1$},
+    qr{\Q$unix_root\E/t_basic_t/_bang__1$},
     "!!bang!! directory created"
 );
 
@@ -68,7 +68,7 @@ mkdir "$passing/t";
 copy "corpus/01-pass.t", "$passing/t/01-pass.t";
 like(
     _unixify($passing),
-    qr{$unix_root/t_basic_t/passing_1$},
+    qr{\Q$unix_root\E/t_basic_t/passing_1$},
     "passing directory created"
 );
 
@@ -77,7 +77,7 @@ mkdir "$failing/t";
 copy "corpus/01-fail.t", "$failing/t/01-fail.t" or die $!;
 like(
     _unixify($failing),
-    qr{$unix_root/t_basic_t/failing_1$},
+    qr{\Q$unix_root\E/t_basic_t/failing_1$},
     "failing directory created"
 );
 
@@ -113,7 +113,7 @@ if ( $perl !~ /\s/ && $lib !~ /\s/ ) {
     chdir $without_t_dir;
     my $tmpdir1   = qx/$perl -I$lib -MTest::TempDir::Tiny -wl -e print -e tempdir/;
     my $real_temp = _unixify( abs_path( File::Spec->tmpdir ) );
-    like( _unixify($tmpdir1), qr{^$real_temp},
+    like( _unixify($tmpdir1), qr{^\Q$real_temp\E},
         "without t, tempdir is in File::Spec->tmpdir" );
 
     # test when *inside* a t directory
@@ -121,7 +121,7 @@ if ( $perl !~ /\s/ && $lib !~ /\s/ ) {
     chdir "t";
     my $tmpdir2 = qx/$perl -I$lib -MTest::TempDir::Tiny -wl -e print -e tempdir/;
     my $expect = _unixify( File::Spec->catdir( $without_t_dir, 'tmp' ) );
-    like( _unixify($tmpdir2), qr{^$expect}, "inside t, tempdir is in ../tmp" );
+    like( _unixify($tmpdir2), qr{^\Q$expect\E}, "inside t, tempdir is in ../tmp" );
 
     chdir $cwd;
 }
@@ -133,7 +133,7 @@ in_tempdir "this is a test" => sub {
     my $arg = _unixify( shift @_ );
     my $cur = _unixify( abs_path(".") );
     is( $arg, $cur, "in_tempdir passes tempdir as argument" );
-    like( $cur, qr{$unix_root/t_basic_t/this_is_a_test_1}, "cwd is correct" );
+    like( $cur, qr{\Q$unix_root\E/t_basic_t/this_is_a_test_1}, "cwd is correct" );
 };
 is( abs_path("."), $cwd, "back to original dir after in_tempdir" );
 
