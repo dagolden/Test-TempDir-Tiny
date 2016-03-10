@@ -106,7 +106,9 @@ ok( -d "$failing/tmp/t_01-fail_t", "failing test directory was not cleaned up" )
 ok( -d "$failing/tmp", "failing root directory was not cleaned up" );
 
 # can't do some tests portably if Perl or lib has spaces in path
-if ( $perl !~ /\s/ && $lib !~ /\s/ ) {
+SKIP: {
+    skip "Perl or lib has spaces in path", 2
+      if $perl =~ /\s/ || $lib =~ /\s/;
 
     # test when not in dist directory with t
     my $without_t_dir = abs_path( File::Temp::tempdir( TMPDIR => 1, CLEANUP => 1 ) );
