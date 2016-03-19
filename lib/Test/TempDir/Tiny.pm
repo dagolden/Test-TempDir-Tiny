@@ -1,4 +1,4 @@
-use 5.008001;
+use 5.006002;
 use strict;
 use warnings;
 
@@ -213,8 +213,14 @@ END {
     # only clean up in original process, not children
     if ( $$ == $ORIGINAL_PID ) {
         # our clean up must run after Test::More sets $? in its END block
-        require B;
-        push @{ B::end_av()->object_2svref }, \&_cleanup;
+        if ( $] lt "5.008000" ) {
+            *Test::TempDir::Tiny::_CLEANER::DESTROY = \&_cleanup;
+            *blob = bless( {}, 'Test::TempDir::Tiny::_CLEANER' );
+        }
+        else {
+            require B;
+            push @{ B::end_av()->object_2svref }, \&_cleanup;
+        }
     }
 }
 
