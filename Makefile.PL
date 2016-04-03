@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use 5.008001;
+use 5.006002;
 
 use ExtUtils::MakeMaker 6.17;
 
@@ -13,7 +13,7 @@ my %WriteMakefileArgs = (
   },
   "DISTNAME" => "Test-TempDir-Tiny",
   "LICENSE" => "apache",
-  "MIN_PERL_VERSION" => "5.008001",
+  "MIN_PERL_VERSION" => "5.006002",
   "NAME" => "Test::TempDir::Tiny",
   "PREREQ_PM" => {
     "B" => 0,
@@ -32,7 +32,7 @@ my %WriteMakefileArgs = (
     "File::Spec" => 0,
     "Test::More" => 0
   },
-  "VERSION" => "0.014",
+  "VERSION" => "0.015",
   "test" => {
     "TESTS" => "t/*.t"
   }
