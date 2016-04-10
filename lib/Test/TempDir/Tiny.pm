@@ -5,7 +5,7 @@ use warnings;
 package Test::TempDir::Tiny;
 # ABSTRACT: Temporary directories that stick around when tests fail
 
-our $VERSION = '0.016';
+our $VERSION = '0.017';
 
 use Exporter 5.57 qw/import/;
 our @EXPORT = qw/tempdir in_tempdir/;
