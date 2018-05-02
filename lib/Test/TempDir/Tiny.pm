@@ -15,7 +15,7 @@ use Cwd qw/abs_path/;
 use Errno qw/EEXIST ENOENT/;
 {
     no warnings 'numeric'; # loading File::Path has non-numeric warnings on 5.8
-    use File::Path 2.01 qw/remove_tree/;
+    use File::Path 2.07 qw/remove_tree/;
 }
 use File::Spec::Functions qw/catdir/;
 use File::Temp;
