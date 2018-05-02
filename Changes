@@ -2,6 +2,8 @@ Revision history for Test-TempDir-Tiny
 
 {{$NEXT}}
 
+0.017     2018-05-02 16:31:12-04:00 America/New_York
+
     - Bumped required version of File::Path to 2.07
 
 0.016     2016-04-10 13:47:33-04:00 America/New_York
