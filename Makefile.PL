@@ -22,7 +22,7 @@ my %WriteMakefileArgs = (
     "Exporter" => "5.57",
     "File::Path" => "2.07",
     "File::Spec::Functions" => 0,
-    "File::Temp" => 0,
+    "File::Temp" => "0.2308",
     "strict" => 0,
     "warnings" => 0
   },
@@ -49,7 +49,7 @@ my %FallbackPrereqs = (
   "File::Path" => "2.07",
   "File::Spec" => 0,
   "File::Spec::Functions" => 0,
-  "File::Temp" => 0,
+  "File::Temp" => "0.2308",
   "Test::More" => 0,
   "strict" => 0,
   "warnings" => 0

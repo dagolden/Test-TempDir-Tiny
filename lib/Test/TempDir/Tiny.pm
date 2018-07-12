@@ -18,7 +18,7 @@ use Errno qw/EEXIST ENOENT/;
     use File::Path 2.07 qw/remove_tree/;
 }
 use File::Spec::Functions qw/catdir/;
-use File::Temp;
+use File::Temp 0.2308;
 
 my ( $ROOT_DIR, $TEST_DIR, %COUNTER );
 my ( $ORIGINAL_PID, $ORIGINAL_CWD, $TRIES, $DELAY, $SYSTEM_TEMP ) =
